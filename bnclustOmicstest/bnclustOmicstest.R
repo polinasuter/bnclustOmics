@@ -1,9 +1,9 @@
-library(bnclustOmics)
+library(bnclustOmics) #github
 library(BiDAG) #on CRAN
 #first the data object is needed
 #a list of matrices, 1 per omics type
 #rows are samples, columns are genes (features)
-dataHCCt<-readRDS("/Users/polinasuter/Google\ Drive/HCC/bnclustOmicstest/testdata.rds")
+dataHCCt<-readRDS("testdata.rds")
 
 #five omics
 names(dataHCCt)
@@ -23,11 +23,11 @@ head(dataHCCt$PP)
 
 #create mappings object
 mappings<-list()
-mappings[["M"]]<-readRDS(("/Users/polinasuter/Google\ Drive/HCC/bnclustOmicstest/mappings/mutMAP.rds"))
-mappings[["CN"]]<-readRDS(("/Users/polinasuter/Google\ Drive/HCC/bnclustOmicstest/mappings/CNAMAP.rds"))
-mappings[["T"]]<-readRDS(("/Users/polinasuter/Google\ Drive/HCC/bnclustOmicstest/mappings/transcriptMAP.rds"))
-mappings[["P"]]<-readRDS(("/Users/polinasuter/Google\ Drive/HCC/bnclustOmicstest/mappings/protMAP.rds"))
-mappings[["PP"]]<-readRDS(("/Users/polinasuter/Google\ Drive/HCC/bnclustOmicstest/mappings/pprotMAP.rds"))
+mappings[["M"]]<-readRDS(("mappings/mutMAP.rds"))
+mappings[["CN"]]<-readRDS(("mappings/CNAMAP.rds"))
+mappings[["T"]]<-readRDS(("mappings/transcriptMAP.rds"))
+mappings[["P"]]<-readRDS(("mappings/protMAP.rds"))
+mappings[["PP"]]<-readRDS(("mappings/pprotMAP.rds"))
 
 #examples, all columns apart from 'gene' are disregarded
 head(mappings[["M"]])
@@ -48,13 +48,14 @@ blt<-blInit(bnnames,intra=c("T"),interXX=list(from=c("P"),to=c("T")),
 
 
 #read the file containing interactions (prior information)
-stringint<-readRDS(("/Users/polinasuter/Google\ Drive/HCC/bnclustOmicstest/stringint.rds"))
+stringint<-readRDS("stringint.rds")
 head(stringint)
 
 #initialize penalization matrix (optional)
 pmt<-bnclustOmics::penInit(bnnames,pfbase=2,intpf=1,intlist=stringint,intsame = 1, usescore=FALSE)
 #2-2*interactions_score,
 hist(pmt)
+#blt<-pmt-1 #blacklist all non-string interactions
 
 #run bnclustOmics
 #if the number of nodes >100, better to be run on Euler
@@ -62,7 +63,7 @@ hist(pmt)
 bnres<-bnclustOmics::bnclustOmics(dataHCCt,bnnames,
                                   blacklist=blt,
                                   edgepmat = pmt, seed=100, baseprob=0.6,
-                                  maxEM=4, kclust=2, epmatrix = TRUE,
+                                  maxEM=4, kclust=2, epmatrix = FALSE,
                                   startpoint = "mclustPCA",
                                   hardlim=6, deltahl=2,
                                   commonspace=TRUE)
@@ -95,6 +96,7 @@ allInteractions<-annotateEdges(bnres,bnnames,sump=1.2,minp=0.5,minkp=0.9,dblist=
 head(allInteractions)
 nrow(allInteractions)
 length(which(allInteractions$db))
+length(which(allInteractions$gene1==allInteractions$gene2))
 #add correlations: columns cl1, cl2, etc...
 allInteractions<-addCors(dataHCCt,allInteractions,bnres$memb)
 head(allInteractions)
@@ -103,12 +105,6 @@ head(allInteractions)
 #25 out of 77 interactions can be found in the string database, pen factor 4
 #13 out of 29 interactions can be found in the string database, pen factor 100
 #here also check for interactions between same genes, they are not part of DBs usually
-
-#plot neighbourhoods
-#to be added
-
-#plot M-> other nodes connections
-#to be added
 
 
 

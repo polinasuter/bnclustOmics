@@ -10,18 +10,18 @@
 #'@param chixi prior pseudocounts used for computing parameters for binary nodes
 #'@param seed integer number set for reproducibility
 #'@param err convergence criteria
-#'@param maxEM maximum number of EM iterations (structural)
+#'@param maxEM maximum number of outer EM iterations (structural search)
 #'@param hardlim maximum number of parents per node when learning networks
 #'@param deltahl additional number of parents when sampling from the common search space
-#'@param nit number of internal iteration in structural EM
-#'@param epmatrix (logical) indicates if the matrices containing posterioir probabilities of single edges should be returned
+#'@param nit number of internal iteration (of parameter estimation) in the EM
+#'@param epmatrix (logical) indicates if the matrices containing posterior probabilities of single edges should be returned
 #'@param plus1it maximum number of search space expansion iterations when performing structure search
 #'@param startpoint defines which algorithm is used to define starting cluster memberships: possible values "random", "mclustPCA" and "mclust"
 #'@param baseprob defines the base probability of cluster membership when "mclustPCA" or "mclust" used as starting point
 #'@param commonspace (logical) defines if the sampling has to be performed from the common search space
 #'@param verbose defines if the output messages should be printed
 #'@return object of class 'bnclustOmics'
-#'@author Polina Suter
+#'@author Polina Suter, Jack Kuipers
 #'@export
 bnclustOmics<-function(omicdata, bnnames, blacklist=NULL, edgepmat=NULL,
                        kclust=2,chixi=0.5, seed=100,err=1e-6, maxEM=10,hardlim=6,
@@ -37,13 +37,6 @@ bnclustOmics<-function(omicdata, bnnames, blacklist=NULL, edgepmat=NULL,
   }
   #check if discrete types are present
   if(bnnames$no+bnnames$nb>0) bgnodes<-c(1:(bnnames$no+bnnames$nb)) else bgnodes<-NULL
-  # if(!noTT | !noTP) {
-  #   learnsep<-FALSE
-  # } else {
-  #   bgnodesT<-unlist(bnnames$omicranges[c("M","CN","P","PP")])
-  #   bgnodesPP<-unlist(bnnames$omicranges[c("M","CN","T")])
-  #   learnsep<-TRUE
-  # }
   learnsep<-FALSE
 
   if(bnnames$nb>0) scoretype<-"mixed" else scoretype<-"bge"
@@ -189,7 +182,6 @@ bnclustOmicsCore<-function(omicdata,bnnames,scoretype,bgnodes=NULL,
   tracelength<-length(assignprogress$likel)
   res<-assignprogress
   if(!MAP) {
-
     if(scoretype=="mixed") {
       ep<-lapply(ep,adjustMixedDir,bnnames=bnnames,blacklist=blacklist)
       consmodel<-lapply(consmodel,adjustMixedDir,bnnames=bnnames,blacklist=blacklist)
@@ -204,7 +196,6 @@ bnclustOmicsCore<-function(omicdata,bnnames,scoretype,bgnodes=NULL,
     if(is.null(sampiter)) sampiter<-2*ceiling(6*bnnames$nc^2*log(bnnames$nc))
     if(epmatrix) {
       for(i in 1:kclust) {
-        print(i)
         scorepar<-BiDAG::scoreparameters("bge",as.data.frame(omicdata),bgnodes=bgnodes,
                                          weightvector=assignprogress$lambdas[,i],
                                          edgepmat = edgepmat)
@@ -230,7 +221,6 @@ bnclustOmicsCore<-function(omicdata,bnnames,scoretype,bgnodes=NULL,
       res$consmemb<-reassignsamples(consensusprobs,nrow(omicdata))
       res$consensusscores<-consensusscores
     }
-
     res$DAGs<-cleanDAGs0(res$DAGs,bnnames,omicdata,res$memb)
   }
   res$p<-p

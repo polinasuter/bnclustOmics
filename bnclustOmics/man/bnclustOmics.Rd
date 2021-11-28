@@ -42,15 +42,15 @@ bnclustOmics(
 
 \item{err}{convergence criteria}
 
-\item{maxEM}{maximum number of EM iterations (structural)}
+\item{maxEM}{maximum number of outer EM iterations (structural search)}
 
 \item{hardlim}{maximum number of parents per node when learning networks}
 
 \item{deltahl}{additional number of parents when sampling from the common search space}
 
-\item{nit}{number of internal iteration in structural EM}
+\item{nit}{number of internal iteration (of parameter estimation) in the EM}
 
-\item{epmatrix}{(logical) indicates if the matrices containing posterioir probabilities of single edges should be returned}
+\item{epmatrix}{(logical) indicates if the matrices containing posterior probabilities of single edges should be returned}
 
 \item{plus1it}{maximum number of search space expansion iterations when performing structure search}
 
@@ -69,5 +69,5 @@ object of class 'bnclustOmics'
 Bayesian network-based clustering of multi-omics data.
 }
 \author{
-Polina Suter
+Polina Suter, Jack Kuipers
 }

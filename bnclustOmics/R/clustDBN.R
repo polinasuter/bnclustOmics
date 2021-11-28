@@ -241,7 +241,6 @@ clustDBNcore<-function(dbndata,b,scoretype,
         ep<-lapply(ep,function(x)x*1*(!blacklist))
       }
 
-      #ep<-cleanDAGs0(ep,bnnames,dbndata,res$memb)
       res$ep<-ep
       consensusprobs<-allrelativeprobs(consensusscores,nrow(dbndata))
       consensusprobs<-relativeprobswithtau(consensusprobs,tauvec)
